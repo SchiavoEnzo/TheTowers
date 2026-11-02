@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {schemas,profile} from '../lib/schema.js';
+import { schemas, profile } from '../models/index.js'
 const agent=JSON.parse(readFileSync(new URL('../examples/agent.json',import.meta.url)));
 test('agente e ameaça preservam todos os campos de being',()=>{
   const {class:role,...being}=agent;

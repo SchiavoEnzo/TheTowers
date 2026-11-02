@@ -11,6 +11,44 @@ npm run dev
 ```
 Abra http://localhost:3000. Em produção use HTTPS, configure as mesmas variáveis e execute `npm run build && npm start`. O backend usa transações e requer um replica set ou cluster compatível. Os índices são criados na primeira requisição. Execute `npm test` para validar os contratos das fichas, campanhas e perfil.
 
+## Organização do backend
+
+```text
+controllers/          Entrada HTTP e respostas, com um controller por entidade
+  auth.controller.js
+  profile.controller.js
+  agent.controller.js
+  being.controller.js
+  campaign.controller.js
+  date.controller.js
+  homebrew.controller.js
+  local.controller.js
+  money.controller.js
+  object.controller.js
+  threat.controller.js
+  record.controller.js  Fábrica do CRUD compartilhado pelos controllers
+models/               Contratos Zod por entidade e campos compartilhados
+routes/               Métodos e caminhos de cada entidade; index.js reúne as rotas
+services/             Autenticação, perfil, CRUD e regras das campanhas
+database/             Conexão MongoDB e criação de índices
+utils/                Erros, criptografia, consultas, acesso e validação de vínculos
+pages/api/[...path].js Entrada Next.js que conecta o banco e encaminha a requisição
+pages/index.jsx       Página existente com o diretório da API
+lib/                  Adaptadores para os imports antigos
+examples/             Exemplos de dados enviados à API
+test/                 Testes dos contratos e dos fluxos da API
+```
+
+O fluxo é `pages/api → routes → controllers → services → MongoDB`. Os services validam os dados com os models e aplicam as regras de acesso, os vínculos e as transações. Controllers traduzem as chamadas HTTP em operações dos services. A conexão e os índices ficam em `database/`; as coleções existentes (`accounts`, `sessions`, `records` e `events`) foram preservadas, sem necessidade de migrar dados.
+
+Cada recurso tem seu próprio arquivo em `models/`, `controllers/` e `routes/`. O CRUD comum é implementado em `services/record.service.js` e reutilizado pela fábrica `controllers/record.controller.js`. O controller de campanhas acrescenta convites, participantes, escudo, rolagens e combates, com regras em `services/campaign.service.js`. Cadastro, login e logout ficam em `services/auth.service.js`; consulta e edição de perfil ficam em `services/profile.service.js`.
+
+Para acrescentar uma entidade, crie seu model e registre o contrato em `models/index.js`; crie o controller usando `createRecordController` e suas rotas com `resourceRoutes`; registre as rotas em `routes/index.js`. Ações específicas podem ser acrescentadas ao controller e ao respectivo service. O router aplica autenticação às rotas por padrão; apenas cadastro e login têm `public: true`.
+
+Os arquivos de `lib/` mantêm os exports anteriores para compatibilidade. Novos módulos devem importar diretamente das pastas correspondentes. As URLs, os corpos JSON e os nomes dos campos do jogo continuam os mesmos. Métodos não permitidos recebem 405 com o cabeçalho `Allow`; caminhos inexistentes recebem 404.
+
+Os testes exercitam os modelos e os fluxos de rotas, autenticação, permissões e vínculos com substitutos do MongoDB. Não exigem banco configurado. Para executar o servidor, configure o replica set local indicado em `.env.example` ou use a URI de um cluster Atlas.
+
 ## Primeira missão
 Exemplos em Bash com curl e jq. Substitua o e-mail pelo da conta de teste. A senha precisa ter entre 10 e 128 caracteres.
 ```bash
@@ -49,7 +87,7 @@ Prefixo de todas as rotas: `/api`. Autenticação via `Authorization: Bearer TOK
 Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals e homebrews. Os documentos retornam _id e data. POST e PUT recebem apenas o conteúdo de data. As listagens retornam até 100 itens, com busca por nome em q e paginação via before (último _id). Ameaças aceitam element. Homebrews aceitam category (threat, ability, ritual ou item). O histórico da campanha retorna os 100 eventos mais recentes.
 
 ## Modelo e regras adotadas
-- Campos e grafias seguem o contrato enviado, incluindo caractheristics, atributes, habilities, dificulty e chaves com hífen. O contrato executável completo fica em lib/schema.js.
+- Campos e grafias seguem o contrato enviado, incluindo caractheristics, atributes, habilities, dificulty e chaves com hífen. Os contratos executáveis ficam em models/, reunidos em models/index.js.
 - Agente e ameaça recebem fichas independentes com a estrutura integral de being. Agentes acrescentam class e rank. Ameaças acrescentam element, vd, size e species. A lista de ameaças é o catálogo cadastrado pelo usuário.
 - Inventário referencia objects e money. Na campanha, users referencia agentes, enemies referencia ameaças, allies referencia beings, locals referencia locais e dates referencia eventos de calendário. Os arrays obrigatórios podem iniciar vazios. Datas usam ISO 8601 com fuso.
 - O criador é o mestre da campanha. As contas participantes ficam em members. Os membros consultam a campanha, suas fichas de agentes e o histórico comum. Apenas o proprietário altera uma ficha. Um jogador rola pelo próprio agente vinculado e o mestre pode rolar por qualquer agente do grupo.
