@@ -57,3 +57,6 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 - O combate registra uma cópia das ameaças selecionadas para preservar os valores do encontro. Os endpoints de campanha, fichas e histórico fornecem os dados para uma futura interface de Escudo do Mestre.
 - Excluir um recurso ainda vinculado retorna 409. A exclusão de uma campanha remove também seus eventos. Os limites de quantidade observados na conta de referência não foram adotados como regra universal.
 - Erros de validação usam 422, credenciais inválidas 401, ação sem permissão 403, recurso ausente ou privado 404 e conflito 409.
+
+## Interface de jogo
+A página inicial abre o cadastro e o login. O mesmo processo Next.js serve a interface React Router e as rotas /api. Após entrar, abra Agentes para criar uma ficha, crie uma campanha com esse agente e abra a mesa para rolar uma habilidade. O histórico da mesa vem do servidor. A central também permite consultar ameaças e homebrews e editar o perfil.
