@@ -101,3 +101,11 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 A página inicial abre o cadastro e o login. O mesmo processo Next.js serve a interface React Router e as rotas /api. Após entrar, abra Agentes para criar uma ficha, crie uma campanha com esse agente e abra a mesa para rolar uma habilidade. O histórico da mesa vem do servidor. A central também permite consultar ameaças e homebrews e editar o perfil.
 
 A tela inicial pode ser visualizada sem MongoDB configurado. Cadastro, login e operações de jogo precisam de uma conexão válida em `.env.local`. O arquivo `examples/agent.json` é compartilhado pelo formulário de agentes, pela seleção de habilidades da mesa e pelos testes dos contratos; ele deve permanecer versionado.
+
+## Publicação na Vercel
+
+Importe `SchiavoEnzo/TheTowers` na conta desejada, usando o preset Next.js e a raiz do repositório. O `vercel.json` define as funções na região `gru1` (São Paulo), próxima do cluster Atlas. As rotas de páginas e de API são detectadas pelo Next.js, sem rewrites adicionais.
+
+Configure `MONGODB_URI` como segredo e `MONGODB_DB` como configuração nas variáveis de ambiente do projeto antes do deploy. Use bancos e credenciais separados para previews. A lista de acesso de rede do Atlas precisa permitir a origem das funções da Vercel; permitir apenas o IP de desenvolvimento não libera o ambiente publicado.
+
+Para desenvolvimento local, configure essas duas variáveis em `.env.local`, carregado automaticamente pelo Next.js. Arquivos de credenciais como `atlas-credentials.env` não são carregados automaticamente e ficam excluídos do Git e do upload pela CLI da Vercel. Nunca inclua credenciais em `vercel.json` nem em variáveis com prefixo `NEXT_PUBLIC_`.
