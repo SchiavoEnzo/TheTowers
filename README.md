@@ -2,7 +2,7 @@
 Aplicação Next.js com interface de jogo em React Router e API conectada ao MongoDB. A página inicial abre o cadastro e o login do Arquivo de Campo. Todas as operações do jogo usam HTTP e JSON.
 
 ## Executar
-Use Node.js 22.13 ou superior. Crie um usuário de banco no Atlas com acesso de leitura e escrita à base escolhida e permita o IP do servidor no acesso de rede. Use a URI de conexão do seu cluster e codifique caracteres especiais das credenciais na URI.
+Use Node.js 24.x, a mesma versão principal configurada na Vercel. Crie um usuário de banco no Atlas com acesso de leitura e escrita à base escolhida e permita o IP do servidor no acesso de rede. Use a URI de conexão do seu cluster e codifique caracteres especiais das credenciais na URI.
 ```sh
 npm ci
 cp .env.example .env.local
