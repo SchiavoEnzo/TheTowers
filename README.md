@@ -1,5 +1,5 @@
 # As Torres · API de RPG
-Servidor Next.js (Pages API Routes) com MongoDB Atlas. A página inicial em preto, branco e vermelho apresenta o diretório da API. Todas as operações do jogo usam HTTP e JSON.
+Aplicação Next.js com interface de jogo em React Router e API conectada ao MongoDB. A página inicial abre o cadastro e o login do Arquivo de Campo. Todas as operações do jogo usam HTTP e JSON.
 
 ## Executar
 Use Node.js 22.13 ou superior. Crie um usuário de banco no Atlas com acesso de leitura e escrita à base escolhida e permita o IP do servidor no acesso de rede. Use a URI de conexão do seu cluster e codifique caracteres especiais das credenciais na URI.
@@ -33,8 +33,9 @@ services/             Autenticação, perfil, CRUD e regras das campanhas
 database/             Conexão MongoDB e criação de índices
 utils/                Erros, criptografia, consultas, acesso e validação de vínculos
 pages/api/[...path].js Entrada Next.js que conecta o banco e encaminha a requisição
-pages/index.jsx       Página existente com o diretório da API
-lib/                  Adaptadores para os imports antigos
+pages/index.jsx       Entrada da interface de jogo, carregada no navegador
+pages/[...screen].jsx Acesso direto às telas da interface
+ui/                   Telas, navegação React Router e cliente HTTP da API
 examples/             Exemplos de dados enviados à API
 test/                 Testes dos contratos e dos fluxos da API
 ```
@@ -45,7 +46,7 @@ Cada recurso tem seu próprio arquivo em `models/`, `controllers/` e `routes/`. 
 
 Para acrescentar uma entidade, crie seu model e registre o contrato em `models/index.js`; crie o controller usando `createRecordController` e suas rotas com `resourceRoutes`; registre as rotas em `routes/index.js`. Ações específicas podem ser acrescentadas ao controller e ao respectivo service. O router aplica autenticação às rotas por padrão; apenas cadastro e login têm `public: true`.
 
-Os arquivos de `lib/` mantêm os exports anteriores para compatibilidade. Novos módulos devem importar diretamente das pastas correspondentes. As URLs, os corpos JSON e os nomes dos campos do jogo continuam os mesmos. Métodos não permitidos recebem 405 com o cabeçalho `Allow`; caminhos inexistentes recebem 404.
+Os módulos importam diretamente das pastas correspondentes; a antiga pasta `lib/` foi substituída pela organização acima. As URLs, os corpos JSON e os nomes dos campos do jogo continuam os mesmos. Métodos não permitidos recebem 405 com o cabeçalho `Allow`; caminhos inexistentes recebem 404.
 
 Os testes exercitam os modelos e os fluxos de rotas, autenticação, permissões e vínculos com substitutos do MongoDB. Não exigem banco configurado. Para executar o servidor, configure o replica set local indicado em `.env.example` ou use a URI de um cluster Atlas.
 
@@ -98,3 +99,5 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 
 ## Interface de jogo
 A página inicial abre o cadastro e o login. O mesmo processo Next.js serve a interface React Router e as rotas /api. Após entrar, abra Agentes para criar uma ficha, crie uma campanha com esse agente e abra a mesa para rolar uma habilidade. O histórico da mesa vem do servidor. A central também permite consultar ameaças e homebrews e editar o perfil.
+
+A tela inicial pode ser visualizada sem MongoDB configurado. Cadastro, login e operações de jogo precisam de uma conexão válida em `.env.local`. O arquivo `examples/agent.json` é compartilhado pelo formulário de agentes, pela seleção de habilidades da mesa e pelos testes dos contratos; ele deve permanecer versionado.
