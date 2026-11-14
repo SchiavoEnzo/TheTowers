@@ -10,7 +10,7 @@ export const being = obj({
   habilities: obj({
     naturals: obj(numbers('inteligence wisdom existance')),
     main: obj(numbers('intelect strengh agility charisma willing')),
-    lasts: obj(numbers(skillNames)),
+    lasts: obj({ ...numbers(skillNames), investigation: num.optional() }),
     'atained-objects': ids.default([]),
     money: ids.default([]),
     extras,

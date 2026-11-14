@@ -16,6 +16,16 @@ test('referências rejeitam coleções excessivas e IDs repetidos', () => {
   assert.equal(ids.safeParse(input).success, false)
   assert.equal(ids.safeParse([input[0], input[0]]).success, false)
 })
+test('investigação aceita bônus e mantém compatibilidade com fichas antigas', () => {
+  const legacy = structuredClone(agent)
+  delete legacy.habilities.lasts.investigation
+  assert.ok(schemas.agents.safeParse(legacy).success)
+  const updated = structuredClone(legacy)
+  updated.habilities.lasts.investigation = 15
+  assert.equal(schemas.agents.parse(updated).habilities.lasts.investigation, 15)
+  updated.habilities.lasts.investigation = '15'
+  assert.equal(schemas.agents.safeParse(updated).success, false)
+})
 test('agente e ameaça preservam todos os campos de being',()=>{
   const {class:role,...being}=agent;
   assert.deepEqual(schemas.beings.parse(being),being);
