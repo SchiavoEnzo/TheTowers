@@ -2,7 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import { schemas, profile } from '../models/index.js'
+import { extras, ids } from '../models/shared.js'
 const agent=JSON.parse(readFileSync(new URL('../examples/agent.json',import.meta.url)));
+test('extras preservam valores heterogêneos e usam objeto vazio por padrão', () => {
+  const input = { text: 'ritual', count: 2, enabled: true, nested: { tags: ['a'] }, empty: null }
+  assert.deepEqual(extras.parse(input), input)
+  assert.deepEqual(extras.parse(undefined), {})
+  assert.equal(extras.safeParse([]).success, false)
+})
+test('referências rejeitam coleções excessivas e IDs repetidos', () => {
+  const input = Array.from({ length: 501 }, (_, i) => i.toString(16).padStart(24, '0'))
+  assert.equal(ids.safeParse(input.slice(0, 500)).success, true)
+  assert.equal(ids.safeParse(input).success, false)
+  assert.equal(ids.safeParse([input[0], input[0]]).success, false)
+})
 test('agente e ameaça preservam todos os campos de being',()=>{
   const {class:role,...being}=agent;
   assert.deepEqual(schemas.beings.parse(being),being);

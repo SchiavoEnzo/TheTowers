@@ -11,7 +11,7 @@ export const ids = z
   .array(id)
   .max(500)
   .refine((a) => new Set(a).size === a.length, 'IDs repetidos')
-export const extras = z.record(z.unknown()).default({})
+export const extras = z.record(z.string(), z.unknown()).default({})
 export const timestamp = z
   .string()
   .datetime({ offset: true })

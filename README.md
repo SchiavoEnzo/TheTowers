@@ -1,5 +1,5 @@
 # As Torres · API de RPG
-Aplicação Next.js com interface de jogo em React Router e API conectada ao MongoDB. A página inicial abre o cadastro e o login do Arquivo de Campo. Todas as operações do jogo usam HTTP e JSON.
+Backend Next.js conectado ao MongoDB, dedicado à API HTTP/JSON. A interface foi movida para o repositório independente `TheTowers-frontend`.
 
 ## Executar
 Use Node.js 24.x, a mesma versão principal configurada na Vercel. Crie um usuário de banco no Atlas com acesso de leitura e escrita à base escolhida e permita o IP do servidor no acesso de rede. Use a URI de conexão do seu cluster e codifique caracteres especiais das credenciais na URI.
@@ -9,7 +9,7 @@ cp .env.example .env.local
 # Edite MONGODB_URI e MONGODB_DB em .env.local
 npm run dev
 ```
-Abra http://localhost:3000. Em produção use HTTPS, configure as mesmas variáveis e execute `npm run build && npm start`. O backend usa transações e requer um replica set ou cluster compatível. Os índices são criados na primeira requisição. Execute `npm test` para validar os contratos das fichas, campanhas e perfil.
+A API fica em http://localhost:3000/api. A raiz `/` não possui interface e retorna 404. Em produção use HTTPS, configure as mesmas variáveis e execute `npm run build && npm start`. O backend usa transações e requer um replica set ou cluster compatível. Os índices são criados na primeira requisição. Execute `npm test` para validar os contratos das fichas, campanhas e perfil.
 
 ## Organização do backend
 
@@ -33,9 +33,6 @@ services/             Autenticação, perfil, CRUD e regras das campanhas
 database/             Conexão MongoDB e criação de índices
 utils/                Erros, criptografia, consultas, acesso e validação de vínculos
 pages/api/[...path].js Entrada Next.js que conecta o banco e encaminha a requisição
-pages/index.jsx       Entrada da interface de jogo, carregada no navegador
-pages/[...screen].jsx Acesso direto às telas da interface
-ui/                   Telas, navegação React Router e cliente HTTP da API
 examples/             Exemplos de dados enviados à API
 test/                 Testes dos contratos e dos fluxos da API
 ```
@@ -97,14 +94,17 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 - Excluir um recurso ainda vinculado retorna 409. A exclusão de uma campanha remove também seus eventos. Os limites de quantidade observados na conta de referência não foram adotados como regra universal.
 - Erros de validação usam 422, credenciais inválidas 401, ação sem permissão 403, recurso ausente ou privado 404 e conflito 409.
 
-## Interface de jogo
-A página inicial abre o cadastro e o login. O mesmo processo Next.js serve a interface React Router e as rotas /api. Após entrar, abra Agentes para criar uma ficha, crie uma campanha com esse agente e abra a mesa para rolar uma habilidade. O histórico da mesa vem do servidor. A central também permite consultar ameaças e homebrews e editar o perfil.
+## Frontend separado
 
-A tela inicial pode ser visualizada sem MongoDB configurado. Cadastro, login e operações de jogo precisam de uma conexão válida em `.env.local`. O arquivo `examples/agent.json` é compartilhado pelo formulário de agentes, pela seleção de habilidades da mesa e pelos testes dos contratos; ele deve permanecer versionado.
+A interface está em `TheTowers-frontend`, com dependências, lockfile e configuração próprios. Execute o backend na porta 3000 e o frontend na porta 3001. No frontend, configure `BACKEND_URL=http://localhost:3000` em `.env.local`. O navegador chama `/api` no servidor do frontend, que encaminha as requisições ao backend, preservando autenticação Bearer, métodos e corpos JSON.
+
+Em produção, publique cada repositório em seu próprio projeto e configure `BACKEND_URL` no frontend com a origem HTTPS do backend antes do build. As credenciais MongoDB pertencem somente ao backend. O backend continua usando Next.js para servir `pages/api`; React e React DOM permanecem como dependências do framework.
+
+`examples/agent.json` continua sendo usado pelos testes do backend. O frontend possui uma cópia independente para os formulários; alterações no contrato devem atualizar os dois repositórios.
 
 ## Publicação na Vercel
 
-Importe `SchiavoEnzo/TheTowers` na conta desejada, usando o preset Next.js e a raiz do repositório. O `vercel.json` define as funções na região `gru1` (São Paulo), próxima do cluster Atlas. As rotas de páginas e de API são detectadas pelo Next.js, sem rewrites adicionais.
+Importe `SchiavoEnzo/TheTowers` na conta desejada, usando o preset Next.js e a raiz do repositório. O `vercel.json` define as funções na região `gru1` (São Paulo), próxima do cluster Atlas. As rotas de API são detectadas pelo Next.js, sem rewrites adicionais.
 
 Configure `MONGODB_URI` como segredo e `MONGODB_DB` como configuração nas variáveis de ambiente do projeto antes do deploy. Use bancos e credenciais separados para previews. A lista de acesso de rede do Atlas precisa permitir a origem das funções da Vercel; permitir apenas o IP de desenvolvimento não libera o ambiente publicado.
 
