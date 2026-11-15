@@ -4,6 +4,31 @@ import {readFileSync} from 'node:fs';
 import { schemas, profile } from '../models/index.js'
 import { extras, ids } from '../models/shared.js'
 const agent=JSON.parse(readFileSync(new URL('../examples/agent.json',import.meta.url)));
+test('atributos atuais iniciam nos máximos em fichas antigas e preservam valores explícitos', () => {
+  const names = ['pv', 'dp', 'shield', 'defense', 'sanity', 'ammo']
+  for (const schema of [schemas.beings, schemas.agents, schemas.threats]) {
+    const { class: role, ...input } = structuredClone(agent)
+    if (schema === schemas.agents) input.class = role
+    if (schema === schemas.threats) input.vd = 80
+    delete input.atributes.defense
+    for (const name of names) delete input.atributes[`current-${name}`]
+    input.atributes.pv = -1
+    input.atributes.shield = 0
+    const parsed = schema.parse(input)
+    assert.equal(parsed.atributes.defense, 0)
+    for (const name of names) {
+      assert.equal(parsed.atributes[`current-${name}`], parsed.atributes[name])
+      parsed.atributes[name] = 20
+      parsed.atributes[`current-${name}`] = 0
+    }
+    assert.deepEqual(schema.parse(parsed), parsed)
+    for (const name of names) {
+      const invalid = structuredClone(parsed)
+      invalid.atributes[`current-${name}`] = '10'
+      assert.equal(schema.safeParse(invalid).success, false)
+    }
+  }
+})
 test('extras preservam valores heterogêneos e usam objeto vazio por padrão', () => {
   const input = { text: 'ritual', count: 2, enabled: true, nested: { tags: ['a'] }, empty: null }
   assert.deepEqual(extras.parse(input), input)

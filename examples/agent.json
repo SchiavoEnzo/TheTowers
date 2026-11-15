@@ -11,7 +11,14 @@
     "sanity": 1,
     "pv": 1,
     "shield": 1,
-    "ammo": 1
+    "ammo": 1,
+    "defense": 0,
+    "current-pv": 1,
+    "current-dp": 1,
+    "current-shield": 1,
+    "current-defense": 0,
+    "current-sanity": 1,
+    "current-ammo": 1
   },
   "habilities": {
     "naturals": {

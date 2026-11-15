@@ -86,6 +86,7 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 
 ## Modelo e regras adotadas
 - Campos e grafias seguem o contrato enviado, incluindo caractheristics, atributes, habilities, dificulty e chaves com hífen. Os contratos executáveis ficam em models/, reunidos em models/index.js.
+- Em personagens, `atributes` inclui `current-pv` (vida), `current-dp` (determinação), `current-shield` (armadura), `current-defense` (defesa), `current-sanity` (sanidade) e `current-ammo` (munição). Quando omitidos, os atuais recebem os respectivos máximos (`pv`, `dp`, `shield`, `defense`, `sanity`, `ammo`); valores atuais explícitos são preservados. O máximo `defense` inicia em 0 quando omitido.
 - Agente e ameaça recebem fichas independentes com a estrutura integral de being. Agentes acrescentam class e rank. Ameaças acrescentam element, vd, size e species. A lista de ameaças é o catálogo cadastrado pelo usuário.
 - Inventário referencia objects e money. Na campanha, users referencia agentes, enemies referencia ameaças, allies referencia beings, locals referencia locais e dates referencia eventos de calendário. Os arrays obrigatórios podem iniciar vazios. Datas usam ISO 8601 com fuso.
 - O criador é o mestre da campanha. As contas participantes ficam em members. Os membros consultam a campanha, suas fichas de agentes e o histórico comum. Apenas o proprietário altera uma ficha. Um jogador rola pelo próprio agente vinculado e o mestre pode rolar por qualquer agente do grupo.
