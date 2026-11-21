@@ -47,24 +47,6 @@ Os módulos importam diretamente das pastas correspondentes; a antiga pasta `lib
 
 Os testes exercitam os modelos e os fluxos de rotas, autenticação, permissões e vínculos com substitutos do MongoDB. Não exigem banco configurado. Para executar o servidor, configure o replica set local indicado em `.env.example` ou use a URI de um cluster Atlas.
 
-## Primeira missão
-Exemplos em Bash com curl e jq. Substitua o e-mail pelo da conta de teste. A senha precisa ter entre 10 e 128 caracteres.
-```bash
-API=http://localhost:3000/api
-read -rp 'E-mail: ' EMAIL
-read -rsp 'Senha: ' PW; echo
-LOGIN=$(jq -n --arg email "$EMAIL" --arg password "$PW" '{email:$email,password:$password}')
-post(){ curl --fail-with-body -sS -H 'Content-Type: application/json' -H "Authorization: Bearer ${TOKEN:-}" -d "$2" "$API/$1"; }
-post auth/register "$LOGIN"
-TOKEN=$(post auth/login "$LOGIN" | jq -er .token)
-unset LOGIN PW
-curl -X PATCH "$API/profile" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"name":"Vigia","image":"https://example.org/avatar.png"}'
-AGENT=$(post agents @examples/agent.json | jq -er ._id)
-CAMPAIGN=$(post campaigns "$(jq -n --arg a "$AGENT" '{name:"As Torres",desc:"Expedição",start:"2026-11-01T18:00:00Z",end:"2026-11-01T22:00:00Z",dificulty:{level:1,"rolling-minimum-level":5},users:[$a],enemies:[],locals:[]}')" | jq -er ._id)
-post "campaigns/$CAMPAIGN/rolls" "$(jq -n --arg a "$AGENT" '{agent:$a,group:"lasts",key:"perception"}')"
-curl -sS "$API/campaigns/$CAMPAIGN/rolls" -H "Authorization: Bearer $TOKEN"
-```
-
 ## Rotas
 Prefixo de todas as rotas: `/api`. Autenticação via `Authorization: Bearer TOKEN`, exceto cadastro e login. Sessões expiram em 24 horas. O cadastro cria conta e perfil na mesma gravação. A imagem de perfil é uma URL HTTPS que pode ser alterada ou removida com null.
 
@@ -94,19 +76,3 @@ Recursos CRUD: beings, agents, threats, objects, money, campaigns, dates, locals
 - O combate registra uma cópia das ameaças selecionadas para preservar os valores do encontro. Os endpoints de campanha, fichas e histórico fornecem os dados para uma futura interface de Escudo do Mestre.
 - Excluir um recurso ainda vinculado retorna 409. A exclusão de uma campanha remove também seus eventos. Os limites de quantidade observados na conta de referência não foram adotados como regra universal.
 - Erros de validação usam 422, credenciais inválidas 401, ação sem permissão 403, recurso ausente ou privado 404 e conflito 409.
-
-## Frontend separado
-
-A interface está em `TheTowers-frontend`, com dependências, lockfile e configuração próprios. Execute o backend na porta 3000 e o frontend na porta 3001. No frontend, configure `BACKEND_URL=http://localhost:3000` em `.env.local`. O navegador chama `/api` no servidor do frontend, que encaminha as requisições ao backend, preservando autenticação Bearer, métodos e corpos JSON.
-
-Em produção, publique cada repositório em seu próprio projeto e configure `BACKEND_URL` no frontend com a origem HTTPS do backend antes do build. As credenciais MongoDB pertencem somente ao backend. O backend continua usando Next.js para servir `pages/api`; React e React DOM permanecem como dependências do framework.
-
-`examples/agent.json` continua sendo usado pelos testes do backend. O frontend possui uma cópia independente para os formulários; alterações no contrato devem atualizar os dois repositórios.
-
-## Publicação na Vercel
-
-Importe `SchiavoEnzo/TheTowers` na conta desejada, usando o preset Next.js e a raiz do repositório. O `vercel.json` define as funções na região `gru1` (São Paulo), próxima do cluster Atlas. As rotas de API são detectadas pelo Next.js, sem rewrites adicionais.
-
-Configure `MONGODB_URI` como segredo e `MONGODB_DB` como configuração nas variáveis de ambiente do projeto antes do deploy. Use bancos e credenciais separados para previews. A lista de acesso de rede do Atlas precisa permitir a origem das funções da Vercel; permitir apenas o IP de desenvolvimento não libera o ambiente publicado.
-
-Para desenvolvimento local, configure essas duas variáveis em `.env.local`, carregado automaticamente pelo Next.js. Arquivos de credenciais como `atlas-credentials.env` não são carregados automaticamente e ficam excluídos do Git e do upload pela CLI da Vercel. Nunca inclua credenciais em `vercel.json` nem em variáveis com prefixo `NEXT_PUBLIC_`.
